@@ -49,9 +49,49 @@ input[type=number]:focus {
   outline: none;
   border-color: #ffa366;
 }
+/* Sound toggle switch styles */
 .sound-toggle {
   margin-top: 12px;
   font-size: 14px;
+  display: flex;
+  align-items: center;
+}
+.sound-toggle .switch {
+  position: relative;
+  display: inline-block;
+  width: 50px;
+  height: 24px;
+  margin-right: 10px;
+}
+.sound-toggle .switch input {
+  opacity: 0;
+  width: 0;
+  height: 0;
+}
+.sound-toggle .slider {
+  position: absolute;
+  cursor: pointer;
+  top: 0; left: 0; right: 0; bottom: 0;
+  background-color: #ccc;
+  transition: .4s;
+  border-radius: 24px;
+}
+.sound-toggle .slider:before {
+  position: absolute;
+  content: "";
+  height: 18px;
+  width: 18px;
+  left: 3px;
+  bottom: 3px;
+  background-color: white;
+  transition: .4s;
+  border-radius: 50%;
+}
+.sound-toggle input:checked + .slider {
+  background-color: #4CAF50;
+}
+.sound-toggle input:checked + .slider:before {
+  transform: translateX(26px);
 }
 #timer {
   font-size: 56px;
@@ -108,7 +148,11 @@ button {
       <input type="number" id="breakMinutes" value="5" min="1">
     </label>
     <label class="sound-toggle">
-      <input type="checkbox" id="soundToggle" checked> Play sound alert
+      <div class="switch">
+        <input type="checkbox" id="soundToggle" checked>
+        <span class="slider"></span>
+      </div>
+      <span>Play sound</span>
     </label>
   </div>
   <div id="timer">25:00</div>
@@ -143,7 +187,6 @@ function startTimer() {
     if (remainingSeconds <= 0) {
       clearInterval(interval);
       isRunning = false;
-      // switch mode
       isWork = !isWork;
       remainingSeconds = (isWork ? work : breakM) * 60;
       if (document.getElementById('soundToggle').checked) {
@@ -167,7 +210,6 @@ function resetTimer() {
 
 document.getElementById('startBtn').addEventListener('click', startTimer);
 document.getElementById('resetBtn').addEventListener('click', resetTimer);
-// init
 resetTimer();
 </script>
 </body>
