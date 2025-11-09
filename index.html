@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Work Focus Timer</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      text-align: center;
+      margin-top: 50px;
+    }
+    #timer {
+      font-size: 48px;
+      margin-top: 20px;
+    }
+    input {
+      width: 50px;
+      text-align: center;
+    }
+    button {
+      padding: 10px 20px;
+      font-size: 16px;
+      margin: 10px;
+    }
+  </style>
+</head>
+<body>
+  <h1>Work Focus Timer</h1>
+  <div>
+    <label>Work minutes: <input type="number" id="workMinutes" value="25" min="1"></label>
+    <label>Break minutes: <input type="number" id="breakMinutes" value="5" min="1"></label>
+  </div>
+  <div id="timer">25:00</div>
+  <button id="startBtn">Start</button>
+  <button id="resetBtn">Reset</button>
+
+  <script>
+    let isRunning = false;
+    let isWork = true;
+    let interval;
+    let remainingSeconds;
+
+    function updateDisplay() {
+      const minutes = Math.floor(remainingSeconds / 60);
+      const seconds = remainingSeconds % 60;
+      document.getElementById('timer').textContent = String(minutes).padStart(2, '0') + ':' + String(seconds).padStart(2, '0');
+    }
+
+    function startTimer() {
+      if (isRunning) return;
+      isRunning = true;
+      const work = parseInt(document.getElementById('workMinutes').value) || 25;
+      const breakM = parseInt(document.getElementById('breakMinutes').value) || 5;
+      if (remainingSeconds == null) {
+        remainingSeconds = work * 60;
+        isWork = true;
+      }
+      interval = setInterval(() => {
+        remainingSeconds--;
+        updateDisplay();
+        if (remainingSeconds <= 0) {
+          clearInterval(interval);
+          isRunning = false;
+          // switch mode
+          isWork = !isWork;
+          remainingSeconds = (isWork ? work : breakM) * 60;
+          // optional beep
+          alert(isWork ? 'Work time!' : 'Break time!');
+          updateDisplay();
+          startTimer();
+        }
+      }, 1000);
+    }
+
+    function resetTimer() {
+      clearInterval(interval);
+      isRunning = false;
+      const work = parseInt(document.getElementById('workMinutes').value) || 25;
+      remainingSeconds = work * 60;
+      isWork = true;
+      updateDisplay();
+    }
+
+    document.getElementById('startBtn').addEventListener('click', startTimer);
+    document.getElementById('resetBtn').addEventListener('click', resetTimer);
+
+    // initialize
+    resetTimer();
+  </script>
+</body>
+</html>
