@@ -2,6 +2,7 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Work Focus Timer</title>
   <style>
     body {
@@ -74,6 +75,26 @@
     .buttons button:hover {
       opacity: 0.9;
       transform: translateY(-2px);
+    }
+    /* Responsive styles */
+    @media (max-width: 600px) {
+      .timer-card {
+        width: 90%;
+        padding: 20px;
+      }
+      #timer {
+        font-size: 40px;
+      }
+      input[type=number] {
+        width: 60px;
+        font-size: 14px;
+      }
+      .buttons button {
+        width: 45%;
+        margin: 10px 2.5%;
+        font-size: 14px;
+        padding: 8px 0;
+      }
     }
   </style>
 </head>
