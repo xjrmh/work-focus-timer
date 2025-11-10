@@ -11,8 +11,10 @@ body {
   display: flex;
   align-items: center;
   justify-content: center;
-  height: 100vh;
+  flex-direction: column;
+  min-height: 100vh;
   margin: 0;
+  padding: 20px;
 }
 .timer-card {
   background: #fff;
@@ -135,6 +137,19 @@ button {
     width: 70px;
   }
 }
+.credit {
+  color: #fff;
+  font-size: 12px;
+  margin-top: 20px;
+  text-align: center;
+}
+.credit a {
+  color: #fff;
+  text-decoration: none;
+}
+.credit a:hover {
+  text-decoration: underline;
+}
 </style>
 </head>
 <body>
@@ -160,6 +175,9 @@ button {
       <span>Enable sound</span>
     </label>
   </div>
+</div>
+<div class="credit">
+  Created by Li Zheng (<a href="mailto:li_zheng@outlook.com">li_zheng@outlook.com</a>). Of course it's AI assisted.
 </div>
 <script>
 let workTime, breakTime;
