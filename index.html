@@ -7,7 +7,7 @@
 <style>
 body {
   font-family: Arial, sans-serif;
-  background: linear-gradient(135deg, #f6d365 0%, #fda085 100%);
+  background: linear-gradient(135deg, #a8edea 0%, #fed6e3 100%);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -15,6 +15,103 @@ body {
   min-height: 100vh;
   margin: 0;
   padding: 20px;
+  transition: background 0.5s ease;
+}
+.world-clock {
+  position: fixed;
+  top: 27px;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 100;
+  font-size: 13px;
+  color: rgba(0, 0, 0, 0.6);
+  display: flex;
+  gap: 20px;
+  align-items: center;
+  justify-content: center;
+  white-space: nowrap;
+  max-width: calc(100vw - 120px);
+  overflow-x: auto;
+  overflow-y: hidden;
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+  padding: 0 20px;
+  height: 40px;
+  line-height: 40px;
+  transition: mask-image 0.3s ease, -webkit-mask-image 0.3s ease;
+}
+.world-clock.has-fade {
+  mask-image: linear-gradient(to right, transparent, black 40px, black calc(100% - 40px), transparent);
+  -webkit-mask-image: linear-gradient(to right, transparent, black 40px, black calc(100% - 40px), transparent);
+}
+.world-clock::-webkit-scrollbar {
+  display: none;
+}
+.city-time {
+  display: flex;
+  gap: 5px;
+  align-items: center;
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+.city-name {
+  font-weight: 500;
+  font-family: Arial, sans-serif;
+}
+.city-clock {
+  font-family: Arial, sans-serif;
+}
+.theme-picker {
+  position: fixed;
+  top: 20px;
+  right: 20px;
+  z-index: 101;
+}
+.theme-btn {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  border: 2px solid white;
+  cursor: pointer;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.2);
+  transition: transform 0.2s;
+  padding: 0;
+  outline: none;
+}
+.theme-btn:hover {
+  transform: scale(1.1);
+}
+.theme-dropdown {
+  display: none;
+  position: absolute;
+  top: 50px;
+  right: 0;
+  background: white;
+  border-radius: 8px;
+  padding: 10px;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+  min-width: 120px;
+}
+.theme-dropdown.show {
+  display: block;
+}
+.theme-option {
+  padding: 8px 12px;
+  cursor: pointer;
+  border-radius: 5px;
+  font-size: 14px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.theme-option:hover {
+  background: #f0f0f0;
+}
+.theme-color {
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  border: 1px solid #ddd;
 }
 .timer-card {
   background: #fff;
@@ -29,19 +126,46 @@ h1 {
   font-size: 24px;
   color: #333;
 }
+.session-indicator {
+  display: inline-block;
+  padding: 6px 16px;
+  border-radius: 20px;
+  font-size: 14px;
+  font-weight: bold;
+  margin-bottom: 15px;
+  transition: all 0.3s ease;
+}
+.session-indicator.work {
+  background: #4CAF50;
+  color: white;
+}
+.session-indicator.break {
+  background: #FF9800;
+  color: white;
+}
 .inputs {
   margin-bottom: 20px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
 }
 label {
-  display: block;
+  display: grid;
+  grid-template-columns: 120px 80px;
+  gap: 10px;
+  align-items: center;
   margin: 8px 0;
   font-size: 14px;
   color: #555;
+}
+label span {
+  text-align: right;
 }
 input[type=number] {
   width: 80px;
   padding: 6px;
   font-size: 16px;
+  box-sizing: border-box;
 }
 #timer {
   font-size: 72px;
@@ -150,17 +274,166 @@ button {
 .credit a:hover {
   text-decoration: underline;
 }
+.overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0, 0, 0, 0.7);
+  display: none;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+  animation: fadeIn 0.3s ease-in;
+}
+.overlay.show {
+  display: flex;
+}
+.overlay-content {
+  background: white;
+  padding: 40px 60px;
+  border-radius: 20px;
+  text-align: center;
+  animation: slideIn 0.5s ease-out;
+}
+.overlay-message {
+  font-size: 36px;
+  font-weight: bold;
+  color: #333;
+  margin-bottom: 20px;
+}
+.emoji-celebration {
+  font-size: 64px;
+  animation: bounce 0.6s ease-in-out infinite;
+}
+.close-overlay {
+  margin-top: 20px;
+  padding: 12px 30px;
+  font-size: 18px;
+  background: #4CAF50;
+  color: white;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+}
+.close-overlay:hover {
+  background: #45a049;
+}
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+@keyframes slideIn {
+  from {
+    transform: translateY(-50px);
+    opacity: 0;
+  }
+  to {
+    transform: translateY(0);
+    opacity: 1;
+  }
+}
+@keyframes bounce {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-20px); }
+}
 </style>
 </head>
 <body>
+<div class="world-clock">
+  <div class="city-time">
+    <span class="city-name">NYC</span>
+    <span class="city-clock" id="clock-ny">--:--</span>
+  </div>
+  <div class="city-time">
+    <span class="city-name">SF</span>
+    <span class="city-clock" id="clock-sf">--:--</span>
+  </div>
+  <div class="city-time">
+    <span class="city-name">LON</span>
+    <span class="city-clock" id="clock-london">--:--</span>
+  </div>
+  <div class="city-time">
+    <span class="city-name">SHA</span>
+    <span class="city-clock" id="clock-shanghai">--:--</span>
+  </div>
+  <div class="city-time">
+    <span class="city-name">DEL</span>
+    <span class="city-clock" id="clock-india">--:--</span>
+  </div>
+</div>
+<div class="theme-picker">
+  <button class="theme-btn" onclick="toggleThemePicker()" style="background: linear-gradient(135deg, #a8edea 0%, #fed6e3 100%);" title="Change theme"></button>
+  <div class="theme-dropdown" id="themeDropdown">
+    <div class="theme-option" onclick="changeTheme('linear-gradient(135deg, #e0e0e0 0%, #f5f5f5 100%)')">
+      <div class="theme-color" style="background: linear-gradient(135deg, #e0e0e0 0%, #f5f5f5 100%);"></div>
+      <span>Gray</span>
+    </div>
+    <div class="theme-option" onclick="changeTheme('linear-gradient(135deg, #f6d365 0%, #fda085 100%)')">
+      <div class="theme-color" style="background: linear-gradient(135deg, #f6d365 0%, #fda085 100%);"></div>
+      <span>Sunset</span>
+    </div>
+    <div class="theme-option" onclick="changeTheme('linear-gradient(135deg, #667eea 0%, #764ba2 100%)')">
+      <div class="theme-color" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);"></div>
+      <span>Purple</span>
+    </div>
+    <div class="theme-option" onclick="changeTheme('linear-gradient(135deg, #f093fb 0%, #f5576c 100%)')">
+      <div class="theme-color" style="background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);"></div>
+      <span>Pink</span>
+    </div>
+    <div class="theme-option" onclick="changeTheme('linear-gradient(135deg, #4facfe 0%, #00f2fe 100%)')">
+      <div class="theme-color" style="background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);"></div>
+      <span>Ocean</span>
+    </div>
+    <div class="theme-option" onclick="changeTheme('linear-gradient(135deg, #43e97b 0%, #38f9d7 100%)')">
+      <div class="theme-color" style="background: linear-gradient(135deg, #43e97b 0%, #38f9d7 100%);"></div>
+      <span>Mint</span>
+    </div>
+    <div class="theme-option" onclick="changeTheme('linear-gradient(135deg, #fa709a 0%, #fee140 100%)')">
+      <div class="theme-color" style="background: linear-gradient(135deg, #fa709a 0%, #fee140 100%);"></div>
+      <span>Peach</span>
+    </div>
+    <div class="theme-option" onclick="changeTheme('linear-gradient(135deg, #a8edea 0%, #fed6e3 100%)')">
+      <div class="theme-color" style="background: linear-gradient(135deg, #a8edea 0%, #fed6e3 100%);"></div>
+      <span>Pastel</span>
+    </div>
+    <div class="theme-option" onclick="changeTheme('linear-gradient(135deg, #ff9a9e 0%, #fecfef 100%)')">
+      <div class="theme-color" style="background: linear-gradient(135deg, #ff9a9e 0%, #fecfef 100%);"></div>
+      <span>Rose</span>
+    </div>
+    <div class="theme-option" onclick="changeTheme('linear-gradient(135deg, #ffecd2 0%, #fcb69f 100%)')">
+      <div class="theme-color" style="background: linear-gradient(135deg, #ffecd2 0%, #fcb69f 100%);"></div>
+      <span>Coral</span>
+    </div>
+    <div class="theme-option" onclick="changeTheme('linear-gradient(135deg, #a1c4fd 0%, #c2e9fb 100%)')">
+      <div class="theme-color" style="background: linear-gradient(135deg, #a1c4fd 0%, #c2e9fb 100%);"></div>
+      <span>Sky</span>
+    </div>
+    <div class="theme-option" onclick="changeTheme('linear-gradient(135deg, #d299c2 0%, #fef9d7 100%)')">
+      <div class="theme-color" style="background: linear-gradient(135deg, #d299c2 0%, #fef9d7 100%);"></div>
+      <span>Lavender</span>
+    </div>
+  </div>
+</div>
+<div class="overlay" id="overlay">
+  <div class="overlay-content">
+    <div class="overlay-message" id="overlayMessage"></div>
+    <div class="emoji-celebration" id="emojiCelebration"></div>
+    <button class="close-overlay" onclick="closeOverlay()">Got it!</button>
+  </div>
+</div>
 <div class="timer-card">
   <h1>Work Focus Timer</h1>
+  <div class="session-indicator work" id="sessionIndicator">💼 Work Session</div>
   <div class="inputs">
-    <label>Work minutes:
-      <input type="number" id="workMinutes" value="25" min="1">
+    <label>
+      <span>Work minutes:</span>
+      <input type="number" id="workMinutes" value="25" min="1" oninput="validateInput(this)">
     </label>
-    <label>Break minutes:
-      <input type="number" id="breakMinutes" value="5" min="1">
+    <label>
+      <span>Break minutes:</span>
+      <input type="number" id="breakMinutes" value="5" min="1" oninput="validateInput(this)">
     </label>
   </div>
   <div id="timer">25:00</div>
@@ -183,44 +456,263 @@ button {
 let workTime, breakTime;
 let totalSeconds, remainingSeconds;
 let interval;
+let beepInterval;
+let beepCount = 0;
+let isWorkSession = true;
+let wakeLock = null;
 const beep = new Audio('https://actions.google.com/sounds/v1/alarms/beep_short.ogg');
+
+function stopBeeping() {
+  if (beepInterval) {
+    clearInterval(beepInterval);
+    beepInterval = null;
+    beepCount = 0;
+    beep.pause();
+    beep.currentTime = 0;
+  }
+}
+
+async function requestWakeLock() {
+  try {
+    if ('wakeLock' in navigator) {
+      wakeLock = await navigator.wakeLock.request('screen');
+      console.log('Wake Lock is active');
+      
+      // Re-request wake lock if it's released (e.g., tab becomes inactive)
+      wakeLock.addEventListener('release', () => {
+        console.log('Wake Lock was released');
+      });
+    }
+  } catch (err) {
+    console.error('Wake Lock error:', err);
+  }
+}
+
+async function releaseWakeLock() {
+  if (wakeLock !== null) {
+    try {
+      await wakeLock.release();
+      wakeLock = null;
+      console.log('Wake Lock released');
+    } catch (err) {
+      console.error('Wake Lock release error:', err);
+    }
+  }
+}
+
+function playBeepSequence() {
+  beepCount = 0;
+  beep.play();
+  beepCount++;
+  
+  beepInterval = setInterval(() => {
+    if (beepCount >= 5) {
+      stopBeeping();
+      return;
+    }
+    beep.currentTime = 0;
+    beep.play();
+    beepCount++;
+  }, 1000);
+}
+
+// Stop beeping on any user interaction
+document.addEventListener('click', stopBeeping);
+document.addEventListener('keydown', stopBeeping);
+
+// Request notification permission on load
+if ('Notification' in window && Notification.permission === 'default') {
+  Notification.requestPermission();
+}
+
+// Update world clock
+function updateWorldClock() {
+  const now = new Date();
+  
+  // New York (EST/EDT - America/New_York)
+  document.getElementById('clock-ny').textContent = 
+    now.toLocaleTimeString('en-US', { timeZone: 'America/New_York', hour: '2-digit', minute: '2-digit' });
+  
+  // San Francisco (PST/PDT - America/Los_Angeles)
+  document.getElementById('clock-sf').textContent = 
+    now.toLocaleTimeString('en-US', { timeZone: 'America/Los_Angeles', hour: '2-digit', minute: '2-digit' });
+  
+  // London (GMT/BST - Europe/London)
+  document.getElementById('clock-london').textContent = 
+    now.toLocaleTimeString('en-US', { timeZone: 'Europe/London', hour: '2-digit', minute: '2-digit' });
+  
+  // Shanghai (CST - Asia/Shanghai)
+  document.getElementById('clock-shanghai').textContent = 
+    now.toLocaleTimeString('en-US', { timeZone: 'Asia/Shanghai', hour: '2-digit', minute: '2-digit' });
+  
+  // India (IST - Asia/Kolkata)
+  document.getElementById('clock-india').textContent = 
+    now.toLocaleTimeString('en-US', { timeZone: 'Asia/Kolkata', hour: '2-digit', minute: '2-digit' });
+}
+
+// Update world clock every second
+updateWorldClock();
+setInterval(updateWorldClock, 1000);
+
+// Check if world clock overlaps with theme picker and apply fade effect
+function checkWorldClockOverlap() {
+  const worldClock = document.querySelector('.world-clock');
+  const themePicker = document.querySelector('.theme-picker');
+  
+  if (worldClock && themePicker) {
+    const clockRect = worldClock.getBoundingClientRect();
+    const pickerRect = themePicker.getBoundingClientRect();
+    
+    // Check if theme picker overlaps with world clock
+    const isOverlapping = !(
+      pickerRect.right < clockRect.left ||
+      pickerRect.left > clockRect.right ||
+      pickerRect.bottom < clockRect.top ||
+      pickerRect.top > clockRect.bottom
+    );
+    
+    if (isOverlapping) {
+      worldClock.classList.add('has-fade');
+    } else {
+      worldClock.classList.remove('has-fade');
+    }
+  }
+}
+
+// Check overlap on resize and initial load
+window.addEventListener('resize', checkWorldClockOverlap);
+checkWorldClockOverlap();
+
+function toggleThemePicker() {
+  document.getElementById('themeDropdown').classList.toggle('show');
+}
+
+function changeTheme(gradient) {
+  document.body.style.background = gradient;
+  document.querySelector('.theme-btn').style.background = gradient;
+  document.getElementById('themeDropdown').classList.remove('show');
+  // Save theme to localStorage
+  localStorage.setItem('timerTheme', gradient);
+}
+
+// Load saved theme on startup
+const savedTheme = localStorage.getItem('timerTheme');
+if (savedTheme) {
+  document.body.style.background = savedTheme;
+  document.querySelector('.theme-btn').style.background = savedTheme;
+}
+
+// Close theme picker when clicking outside
+document.addEventListener('click', function(event) {
+  const themePicker = document.querySelector('.theme-picker');
+  if (!themePicker.contains(event.target)) {
+    document.getElementById('themeDropdown').classList.remove('show');
+  }
+});
+
+function showOverlay(message, emoji) {
+  document.getElementById('overlayMessage').textContent = message;
+  document.getElementById('emojiCelebration').textContent = emoji;
+  document.getElementById('overlay').classList.add('show');
+}
+
+function validateInput(input) {
+  if (input.value < 1 || input.value === '') {
+    input.value = 1;
+  }
+}
+
+function closeOverlay() {
+  document.getElementById('overlay').classList.remove('show');
+  stopBeeping();
+  // Always update work/break times before continuing
+  workTime = parseInt(document.getElementById('workMinutes').value) * 60;
+  breakTime = parseInt(document.getElementById('breakMinutes').value) * 60;
+  // Start the next session after closing overlay
+  if (remainingSeconds > 0) {
+    continueTimer();
+  }
+}
+
 function updateDisplay() {
   const minutes = Math.floor(remainingSeconds / 60).toString().padStart(2, '0');
   const seconds = (remainingSeconds % 60).toString().padStart(2, '0');
   document.getElementById('timer').textContent = `${minutes}:${seconds}`;
+  
+  // Update session indicator
+  const indicator = document.getElementById('sessionIndicator');
+  if (isWorkSession) {
+    indicator.textContent = '💼 Work Session';
+    indicator.className = 'session-indicator work';
+  } else {
+    indicator.textContent = '☕ Break Session';
+    indicator.className = 'session-indicator break';
+  }
 }
-function startTimer() {
-  workTime = parseInt(document.getElementById('workMinutes').value) * 60;
-  breakTime = parseInt(document.getElementById('breakMinutes').value) * 60;
-  totalSeconds = workTime;
-  remainingSeconds = totalSeconds;
-  updateDisplay();
+
+function continueTimer() {
   clearInterval(interval);
   interval = setInterval(() => {
     remainingSeconds--;
     updateDisplay();
     if (remainingSeconds <= 0) {
       clearInterval(interval);
-      // play beep if enabled
-      if (document.getElementById('soundToggle').checked) {
-        beep.play();
-      }
-      if (totalSeconds === workTime) {
-        alert('Work session complete! Time for a break.');
+      
+      // Determine message and next session
+      let message, emoji;
+      if (isWorkSession) {
+        message = 'Time to take a rest!';
+        emoji = '🎉🎮🎵';
+        isWorkSession = false;
         totalSeconds = breakTime;
       } else {
-        alert('Break session complete! Back to work.');
+        message = 'Time to work!';
+        emoji = '💪🔥✨';
+        isWorkSession = true;
         totalSeconds = workTime;
       }
+      
+      // Set up next session
       remainingSeconds = totalSeconds;
       updateDisplay();
-      startTimer();
+      
+      // Show overlay message
+      showOverlay(message, emoji);
+      
+      // play beep if enabled
+      if (document.getElementById('soundToggle').checked) {
+        playBeepSequence();
+      }
+      
+      // Show browser notification
+      if ('Notification' in window && Notification.permission === 'granted') {
+        new Notification('Work Focus Timer', { body: message });
+      }
     }
   }, 1000);
 }
+
+function startTimer() {
+  workTime = parseInt(document.getElementById('workMinutes').value) * 60;
+  breakTime = parseInt(document.getElementById('breakMinutes').value) * 60;
+  if (!interval) {
+    // Only reset to work session if starting fresh
+    isWorkSession = true;
+    totalSeconds = workTime;
+    remainingSeconds = totalSeconds;
+  }
+  updateDisplay();
+  requestWakeLock(); // Keep screen on while timer is running
+  continueTimer();
+}
+
 function resetTimer() {
   clearInterval(interval);
-  remainingSeconds = parseInt(document.getElementById('workMinutes').value) * 60;
+  stopBeeping();
+  releaseWakeLock(); // Release wake lock when timer is reset
+  isWorkSession = true;
+  workTime = parseInt(document.getElementById('workMinutes').value) * 60;
+  remainingSeconds = workTime;
   updateDisplay();
 }
 remainingSeconds = parseInt(document.getElementById('workMinutes')?.value || 25) * 60;
