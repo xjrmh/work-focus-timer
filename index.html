@@ -595,11 +595,11 @@ button {
   <div class="inputs">
     <label>
       <span>Work minutes:</span>
-      <input type="number" id="workMinutes" value="25" min="1" max="60" oninput="validateInput(this)">
+      <input type="number" id="workMinutes" value="25" min="1" max="60" oninput="validateInput(this)" onfocus="validateInput(this)">
     </label>
     <label>
       <span>Break minutes:</span>
-      <input type="number" id="breakMinutes" value="5" min="1" max="60" oninput="validateInput(this)">
+      <input type="number" id="breakMinutes" value="5" min="1" max="60" oninput="validateInput(this)" onfocus="validateInput(this)">
     </label>
   </div>
   <div id="timer">25:00</div>
@@ -982,6 +982,8 @@ function startTimer() {
   }
   updateDisplay();
   document.getElementById('startBtn').disabled = true; // Disable start button
+  document.getElementById('workMinutes').disabled = true; // Disable work minutes input
+  document.getElementById('breakMinutes').disabled = true; // Disable break minutes input
   document.getElementById('focusModeToggle').disabled = false; // Enable focus mode toggle
   requestWakeLock(); // Keep screen on while timer is running
   updateFocusMode(); // Apply focus mode if toggle is on
@@ -990,13 +992,21 @@ function startTimer() {
 
 function resetTimer() {
   clearInterval(interval);
+  interval = null; // Set to null so add5Minutes works correctly
   stopBeeping();
   releaseWakeLock(); // Release wake lock when timer is reset
   exitFocusMode(); // Exit focus mode when reset
   document.getElementById('startBtn').disabled = false; // Enable start button
+  document.getElementById('workMinutes').disabled = false; // Enable work minutes input
+  document.getElementById('breakMinutes').disabled = false; // Enable break minutes input
   document.getElementById('focusModeToggle').disabled = true; // Disable focus mode toggle
+  
+  // Reset to default values
+  document.getElementById('workMinutes').value = 25;
+  document.getElementById('breakMinutes').value = 5;
+  
   isWorkSession = true;
-  workTime = parseInt(document.getElementById('workMinutes').value) * 60;
+  workTime = 25 * 60; // Reset to default 25 minutes
   remainingSeconds = workTime;
   updateDisplay();
 }
@@ -1004,18 +1014,20 @@ function resetTimer() {
 function add5Minutes() {
   remainingSeconds += 300; // Add 5 minutes (300 seconds)
   
-  // If timer is not running, also update the input selector
+  // If timer is not running, also update the input selector and cap at 60 minutes
   if (!interval) {
     if (isWorkSession) {
       const workInput = document.getElementById('workMinutes');
       const newValue = Math.min(parseInt(workInput.value) + 5, 60);
       workInput.value = newValue;
       workTime = newValue * 60;
+      remainingSeconds = workTime; // Cap remaining seconds at 60 minutes
     } else {
       const breakInput = document.getElementById('breakMinutes');
       const newValue = Math.min(parseInt(breakInput.value) + 5, 60);
       breakInput.value = newValue;
       breakTime = newValue * 60;
+      remainingSeconds = breakTime; // Cap remaining seconds at 60 minutes
     }
   }
   
