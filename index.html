@@ -198,6 +198,11 @@ button {
 #startBtn:hover {
   background-color: #45a049;
 }
+#startBtn:disabled {
+  background-color: #cccccc;
+  cursor: not-allowed;
+  opacity: 0.6;
+}
 #resetBtn {
   background-color: #f44336;
   color: white;
@@ -334,7 +339,7 @@ button {
     font-size: 14px;
   }
   #timer {
-    font-size: 56px;
+    font-size: clamp(48px, 15vmin, 120px);
     margin: 0;
   }
   .button-container {
@@ -410,23 +415,26 @@ button {
   justify-content: center;
   z-index: 2000;
   cursor: pointer;
+  padding: 10px;
 }
 .focus-mode.active {
   display: flex;
 }
 .focus-mode-timer {
-  font-size: 180px;
+  font-size: clamp(80px, 25vmin, 400px);
   color: #fff;
   font-weight: 300;
+  max-width: 90%;
+  text-align: center;
 }
 @media (max-width: 600px) {
   .focus-mode-timer {
-    font-size: 96px;
+    font-size: clamp(60px, 20vmin, 200px);
   }
 }
 @media (max-height: 700px) and (orientation: landscape) {
   .focus-mode-timer {
-    font-size: 80px;
+    font-size: clamp(60px, 18vmin, 180px);
   }
 }
 .overlay {
@@ -641,15 +649,22 @@ function stopBeeping() {
 }
 
 async function requestWakeLock() {
+  // Check if wake lock toggle exists and is enabled
+  const wakeLockToggle = document.getElementById('wakeLockToggle');
+  if (wakeLockToggle && !wakeLockToggle.checked) {
+    return;
+  }
+  
   try {
-    if ('wakeLock' in navigator) {
+    if ('wakeLock' in navigator && !wakeLock) {
       wakeLock = await navigator.wakeLock.request('screen');
       console.log('Wake Lock is active');
       
       // Re-request wake lock if it's released (e.g., tab becomes inactive)
       wakeLock.addEventListener('release', () => {
         console.log('Wake Lock was released');
-      });
+        wakeLock = null;
+      }, { once: true });
     }
   } catch (err) {
     console.error('Wake Lock error:', err);
@@ -816,6 +831,29 @@ document.getElementById('focusModeToggle').addEventListener('change', function()
   updateFocusMode();
 });
 
+// Handle wake lock toggle change
+const wakeLockToggleEl = document.getElementById('wakeLockToggle');
+if (wakeLockToggleEl) {
+  wakeLockToggleEl.addEventListener('change', function(event) {
+    // Save preference to localStorage
+    localStorage.setItem('wakeLockEnabled', event.target.checked);
+    
+    if (interval) {  // Timer is running
+      if (event.target.checked) {
+        requestWakeLock();
+      } else {
+        releaseWakeLock();
+      }
+    }
+  });
+}
+
+// Load saved wake lock preference
+const savedWakeLock = localStorage.getItem('wakeLockEnabled');
+if (savedWakeLock !== null && wakeLockToggleEl) {
+  wakeLockToggleEl.checked = savedWakeLock === 'true';
+}
+
 function showOverlay(message, emoji) {
   document.getElementById('overlayMessage').textContent = message;
   document.getElementById('emojiCelebration').textContent = emoji;
@@ -943,6 +981,7 @@ function startTimer() {
     remainingSeconds = totalSeconds;
   }
   updateDisplay();
+  document.getElementById('startBtn').disabled = true; // Disable start button
   document.getElementById('focusModeToggle').disabled = false; // Enable focus mode toggle
   requestWakeLock(); // Keep screen on while timer is running
   updateFocusMode(); // Apply focus mode if toggle is on
@@ -954,6 +993,7 @@ function resetTimer() {
   stopBeeping();
   releaseWakeLock(); // Release wake lock when timer is reset
   exitFocusMode(); // Exit focus mode when reset
+  document.getElementById('startBtn').disabled = false; // Enable start button
   document.getElementById('focusModeToggle').disabled = true; // Disable focus mode toggle
   isWorkSession = true;
   workTime = parseInt(document.getElementById('workMinutes').value) * 60;
