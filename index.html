@@ -290,58 +290,75 @@ button {
   }
 }
 /* Landscape orientation for mobile - optimize for wide but short screens */
-@media (max-height: 600px) and (orientation: landscape) {
+@media (max-height: 666px) and (orientation: landscape) {
   body {
-    padding: 10px;
+    padding: 0;
+    display: flex;
+    justify-content: center;
+    align-items: center;
   }
   .app-title {
-    font-size: 20px;
-    margin: 5px 0;
+    display: none;
   }
   .world-clock {
-    font-size: 10px;
-    top: 5px;
-    gap: 10px;
+    display: none;
   }
   .timer-card {
-    padding: 15px 20px;
-    max-width: 600px;
+    padding: 20px 30px;
+    width: 300px;
+    height: 100vh;
+    border-radius: 0;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-evenly;
+    margin: 0 auto;
   }
   .session-indicator {
-    font-size: 12px;
-    padding: 4px 12px;
-    margin-bottom: 8px;
+    font-size: 13px;
+    padding: 5px 14px;
+    margin-bottom: 0;
   }
   .inputs {
-    gap: 15px;
-    margin-bottom: 10px;
+    gap: 10px;
+    margin-bottom: 0;
   }
   .inputs label {
     font-size: 14px;
   }
+  .inputs label span {
+    margin-right: 5px;
+  }
   input[type=number] {
-    width: 60px;
+    width: 58px;
     padding: 6px;
     font-size: 14px;
   }
   #timer {
-    font-size: 48px;
-    margin: 10px 0;
+    font-size: 56px;
+    margin: 0;
+  }
+  .button-container {
+    display: flex;
+    justify-content: center;
+    flex-wrap: nowrap;
+    gap: 6px;
   }
   button {
-    padding: 8px 16px;
+    padding: 8px 15px;
     font-size: 14px;
-    margin: 3px;
+    margin: 0;
+    white-space: nowrap;
   }
   .sound-container {
-    margin-top: 10px;
+    margin-top: 0;
+    gap: 20px;
   }
   .sound-toggle {
     font-size: 13px;
   }
   .switch {
-    width: 44px;
-    height: 22px;
+    width: 46px;
+    height: 24px;
   }
   .slider:before {
     width: 18px;
@@ -351,8 +368,7 @@ button {
     transform: translateX(22px);
   }
   .credit {
-    font-size: 10px;
-    margin-top: 10px;
+    display: none;
   }
   .theme-picker {
     top: 5px;
@@ -408,7 +424,7 @@ button {
     font-size: 96px;
   }
 }
-@media (max-height: 600px) and (orientation: landscape) {
+@media (max-height: 700px) and (orientation: landscape) {
   .focus-mode-timer {
     font-size: 80px;
   }
@@ -579,9 +595,11 @@ button {
     </label>
   </div>
   <div id="timer">25:00</div>
-  <button id="startBtn" onclick="startTimer()">Start</button>
-  <button id="resetBtn" onclick="resetTimer()">Reset</button>
-  <button id="add5Btn" onclick="add5Minutes()">+5 min</button>
+  <div class="button-container">
+    <button id="startBtn" onclick="startTimer()">Start</button>
+    <button id="resetBtn" onclick="resetTimer()">Reset</button>
+    <button id="add5Btn" onclick="add5Minutes()">+5 min</button>
+  </div>
   <div class="sound-container">
     <label class="sound-toggle">
       <div class="switch">
