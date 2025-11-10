@@ -259,11 +259,22 @@ button {
 .switch input:checked + .slider:before {
   transform: translateX(20px);
 }
+.switch input:disabled + .slider {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+.sound-toggle:has(input:disabled) {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
 /* sound container for bottom alignment */
 .sound-container {
   display: flex;
   justify-content: center;
+  align-items: center;
+  gap: 30px;
   margin-top: 20px;
+  flex-wrap: wrap;
 }
 /* Responsive for mobile */
 @media (max-width: 600px) {
@@ -278,6 +289,85 @@ button {
     width: 70px;
   }
 }
+/* Landscape orientation for mobile - optimize for wide but short screens */
+@media (max-height: 600px) and (orientation: landscape) {
+  body {
+    padding: 10px;
+  }
+  .app-title {
+    font-size: 20px;
+    margin: 5px 0;
+  }
+  .world-clock {
+    font-size: 10px;
+    top: 5px;
+    gap: 10px;
+  }
+  .timer-card {
+    padding: 15px 20px;
+    max-width: 600px;
+  }
+  .session-indicator {
+    font-size: 12px;
+    padding: 4px 12px;
+    margin-bottom: 8px;
+  }
+  .inputs {
+    gap: 15px;
+    margin-bottom: 10px;
+  }
+  .inputs label {
+    font-size: 14px;
+  }
+  input[type=number] {
+    width: 60px;
+    padding: 6px;
+    font-size: 14px;
+  }
+  #timer {
+    font-size: 48px;
+    margin: 10px 0;
+  }
+  button {
+    padding: 8px 16px;
+    font-size: 14px;
+    margin: 3px;
+  }
+  .sound-container {
+    margin-top: 10px;
+  }
+  .sound-toggle {
+    font-size: 13px;
+  }
+  .switch {
+    width: 44px;
+    height: 22px;
+  }
+  .slider:before {
+    width: 18px;
+    height: 18px;
+  }
+  input:checked + .slider:before {
+    transform: translateX(22px);
+  }
+  .credit {
+    font-size: 10px;
+    margin-top: 10px;
+  }
+  .theme-picker {
+    top: 5px;
+    right: 5px;
+  }
+  .theme-btn {
+    width: 35px;
+    height: 35px;
+    font-size: 18px;
+  }
+  .theme-dropdown {
+    right: 5px;
+    max-height: 250px;
+  }
+}
 .credit {
   font-size: 12px;
   margin-top: 20px;
@@ -290,6 +380,38 @@ button {
 }
 .credit a:hover {
   text-decoration: underline;
+}
+/* Focus Mode styles */
+.focus-mode {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: #000;
+  display: none;
+  align-items: center;
+  justify-content: center;
+  z-index: 2000;
+  cursor: pointer;
+}
+.focus-mode.active {
+  display: flex;
+}
+.focus-mode-timer {
+  font-size: 180px;
+  color: #fff;
+  font-weight: 300;
+}
+@media (max-width: 600px) {
+  .focus-mode-timer {
+    font-size: 96px;
+  }
+}
+@media (max-height: 600px) and (orientation: landscape) {
+  .focus-mode-timer {
+    font-size: 80px;
+  }
 }
 .overlay {
   position: fixed;
@@ -433,6 +555,9 @@ button {
     </div>
   </div>
 </div>
+<div class="focus-mode" id="focusMode" onclick="exitFocusMode()">
+  <div class="focus-mode-timer" id="focusModeTimer">25:00</div>
+</div>
 <div class="overlay" id="overlay">
   <div class="overlay-content">
     <div class="overlay-message" id="overlayMessage"></div>
@@ -464,6 +589,13 @@ button {
         <span class="slider"></span>
       </div>
       <span>Sound</span>
+    </label>
+    <label class="sound-toggle">
+      <div class="switch">
+        <input type="checkbox" id="focusModeToggle" disabled>
+        <span class="slider"></span>
+      </div>
+      <span>Focus Mode</span>
     </label>
   </div>
 </div>
@@ -661,6 +793,11 @@ document.addEventListener('click', function(event) {
   }
 });
 
+// Handle focus mode toggle
+document.getElementById('focusModeToggle').addEventListener('change', function() {
+  updateFocusMode();
+});
+
 function showOverlay(message, emoji) {
   document.getElementById('overlayMessage').textContent = message;
   document.getElementById('emojiCelebration').textContent = emoji;
@@ -673,6 +810,35 @@ function validateInput(input) {
   } else if (input.value > 60) {
     input.value = 60;
   }
+  
+  // Sync timer display if timer is not running
+  if (!interval) {
+    const workMinutes = parseInt(document.getElementById('workMinutes').value);
+    const breakMinutes = parseInt(document.getElementById('breakMinutes').value);
+    
+    if (isWorkSession) {
+      workTime = workMinutes * 60;
+      remainingSeconds = workTime;
+    } else {
+      breakTime = breakMinutes * 60;
+      remainingSeconds = breakTime;
+    }
+    updateDisplay();
+  }
+}
+
+function updateFocusMode() {
+  const isEnabled = document.getElementById('focusModeToggle').checked;
+  if (isEnabled && interval) {  // Only activate if timer is running
+    document.getElementById('focusMode').classList.add('active');
+  } else {
+    document.getElementById('focusMode').classList.remove('active');
+  }
+}
+
+function exitFocusMode() {
+  document.getElementById('focusModeToggle').checked = false;
+  document.getElementById('focusMode').classList.remove('active');
 }
 
 function closeOverlay() {
@@ -690,7 +856,9 @@ function closeOverlay() {
 function updateDisplay() {
   const minutes = Math.floor(remainingSeconds / 60).toString().padStart(2, '0');
   const seconds = (remainingSeconds % 60).toString().padStart(2, '0');
-  document.getElementById('timer').textContent = `${minutes}:${seconds}`;
+  const timeString = `${minutes}:${seconds}`;
+  document.getElementById('timer').textContent = timeString;
+  document.getElementById('focusModeTimer').textContent = timeString;
   
   // Update session indicator
   const indicator = document.getElementById('sessionIndicator');
@@ -705,11 +873,13 @@ function updateDisplay() {
 
 function continueTimer() {
   clearInterval(interval);
+  updateFocusMode(); // Update focus mode when continuing
   interval = setInterval(() => {
     remainingSeconds--;
     updateDisplay();
     if (remainingSeconds <= 0) {
       clearInterval(interval);
+      exitFocusMode(); // Automatically exit focus mode when time is up
       
       // Determine message and next session
       let message, emoji;
@@ -755,7 +925,9 @@ function startTimer() {
     remainingSeconds = totalSeconds;
   }
   updateDisplay();
+  document.getElementById('focusModeToggle').disabled = false; // Enable focus mode toggle
   requestWakeLock(); // Keep screen on while timer is running
+  updateFocusMode(); // Apply focus mode if toggle is on
   continueTimer();
 }
 
@@ -763,6 +935,8 @@ function resetTimer() {
   clearInterval(interval);
   stopBeeping();
   releaseWakeLock(); // Release wake lock when timer is reset
+  exitFocusMode(); // Exit focus mode when reset
+  document.getElementById('focusModeToggle').disabled = true; // Disable focus mode toggle
   isWorkSession = true;
   workTime = parseInt(document.getElementById('workMinutes').value) * 60;
   remainingSeconds = workTime;
@@ -771,6 +945,22 @@ function resetTimer() {
 
 function add5Minutes() {
   remainingSeconds += 300; // Add 5 minutes (300 seconds)
+  
+  // If timer is not running, also update the input selector
+  if (!interval) {
+    if (isWorkSession) {
+      const workInput = document.getElementById('workMinutes');
+      const newValue = Math.min(parseInt(workInput.value) + 5, 60);
+      workInput.value = newValue;
+      workTime = newValue * 60;
+    } else {
+      const breakInput = document.getElementById('breakMinutes');
+      const newValue = Math.min(parseInt(breakInput.value) + 5, 60);
+      breakInput.value = newValue;
+      breakTime = newValue * 60;
+    }
+  }
+  
   updateDisplay();
 }
 
